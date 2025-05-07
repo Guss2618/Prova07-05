@@ -7,7 +7,6 @@ const PORT = 3000;
 
 app.use(express.json());
 
-
 function registrarLog(nomeAluno) {
     const id = uuidv4()
     const dataHora = new Date().toLocaleString()
@@ -24,10 +23,10 @@ function registrarLog(nomeAluno) {
     return id;
 }
 
-
 app.get('/', (req, res) => {
     res.send('API REST com Express funcionando!')
 });
+
 app.post('/logs', (req, res) => {
     const { nome } = req.body;
 
@@ -41,6 +40,27 @@ app.post('/logs', (req, res) => {
         id: idGerado
     });
 });
+
+// Nova rota GET /logs/:id
+app.get('/logs/:id', (req, res) => {
+    const idBuscado = req.params.id;
+
+    fs.readFile('logs.txt', 'utf8', (err, data) => {
+        if (err) {
+            return res.status(500).json({ erro: 'Erro ao ler o arquivo de logs.' });
+        }
+
+        const linhas = data.split('\n');
+        const linhaEncontrada = linhas.find(linha => linha.startsWith(idBuscado));
+
+        if (linhaEncontrada) {
+            res.status(200).json({ mensagem: linhaEncontrada });
+        } else {
+            res.status(404).json({ erro: 'Log não encontrado para o ID informado.' });
+        }
+    });
+});
+
 app.listen(PORT, () => {
     console.log(`Servidor rodando em http://localhost:${PORT}`)
 });
